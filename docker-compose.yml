@@ -1,0 +1,109 @@
+version: '3'
+
+services:
+  ml-service:
+    build:
+      context: ./ml
+      dockerfile: Dockerfile
+    container_name: ml-container
+
+    depends_on:
+      - test-service
+    restart: always
+
+  wavelet-service:
+    build:
+      context: ./wavelet_filtering
+      dockerfile: Dockerfile
+    container_name: wavelet-container
+
+    depends_on:
+      - test-service
+    restart: always
+
+  app-service:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: app-container
+    ports:
+      - "8050:8050"
+
+    depends_on:
+      - test-service
+    restart: always
+
+  test-service:
+    build:
+      context: ./test_bd
+      dockerfile: Dockerfile
+    container_name: test-container
+
+    depends_on:
+      - postgres-db
+
+  postgres-db:
+    image: postgres:latest
+    container_name: postgres-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: futures_user
+      POSTGRES_PASSWORD: aaa
+      POSTGRES_DB: analys
+    ports:
+      - "5433:5432"
+
+
+# version: '3.8'
+# services:
+#   postgres:
+#     image: postgres:13
+#     environment:
+#       POSTGRES_USER: futures_user
+#       POSTGRES_PASSWORD: 082101
+#       POSTGRES_DB: analys
+#     ports:
+#       - "5432:5432"
+#     volumes:
+#       - postgres_data:/var/lib/postgresql/data
+
+#   test_db:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.test_db
+#     environment:
+#       API_KEY: your_api_key_here
+#       API_SECRET: your_api_secret_here
+#       API_PASSPHRASE: your_api_passphrase_here
+#     depends_on:
+#       - postgres
+
+#   app:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.app
+#     ports:
+#       - "8050:8050"
+#     depends_on:
+#       - postgres
+
+#   wavelet_filtering:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.wavelet_filtering
+#     depends_on:
+#       - postgres
+
+#   ml:
+#     build:
+#       context: .
+#       dockerfile: Dockerfile.ml
+#     environment:
+#       API_KEY: your_api_key_here
+#       API_SECRET: your_api_secret_here
+#       API_PASSPHRASE: your_api_passphrase_here
+#     depends_on:
+#       - postgres
+
+# volumes:
+#   postgres_data:
