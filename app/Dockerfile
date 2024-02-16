@@ -18,5 +18,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Копируем файлы приложения
 COPY . .
 
-# Команда для выполнения
-CMD ["python", "app.py"]
+# Запуск скрипта инициализации DB и основного приложения
+CMD ["sh", "-c", "python init_db.py && python app.py"]
+
