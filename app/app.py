@@ -1,4 +1,3 @@
-# app.py
 import os
 import dash
 from dash import dcc, html
@@ -6,11 +5,12 @@ from dash.dependencies import Input, Output
 import pandas as pd
 import requests
 from sqlalchemy import create_engine
-
+import datetime
 import time
 import base64
 import hmac
 import hashlib
+import pytz
 
 
 # Подключение к базе данных PostgreSQL
@@ -25,10 +25,6 @@ eth_data_predictions = pd.read_sql_table('eth_data_predictions', engine)
 
 # Инициализация Dash-приложения
 app = dash.Dash(__name__)
-
-
-
-
 
 
 # Ключи API Coinbase Pro
@@ -65,6 +61,13 @@ def get_real_time_price(product_id):
         print(f"Error fetching real-time price: {e}")
         return None
 
+# # Функция для получения текущей даты и времени в формате "ГГГГ-ММ-ДД ЧЧ:ММ:СС"
+def get_current_datetime():
+    moscow_tz = pytz.timezone('Europe/Moscow')
+    now = datetime.datetime.now(moscow_tz)
+    return now.strftime("%Y-%m-%d %H:%M:%S")
+
+
 # Обновление цен в реальном времени каждые 10 секунд
 @app.callback([Output('real-time-btc-price', 'children'),
                Output('real-time-eth-price', 'children')],
@@ -74,13 +77,15 @@ def update_real_time_prices(n_intervals):
         btc_price = get_real_time_price("BTC-USD")
         eth_price = get_real_time_price("ETH-USD")
 
+        current_datetime = get_current_datetime()
+
         if btc_price is not None:
-            btc_output = f"Цена BTC: ${btc_price}"
+            btc_output = f"Цена BTC {current_datetime}: ${btc_price}"
         else:
             btc_output = "Не удалось получить цену BTC"
 
         if eth_price is not None:
-            eth_output = f"Цена ETH: ${eth_price}"
+            eth_output = f"Цена ETH {current_datetime}: ${eth_price}"
         else:
             eth_output = "Не удалось получить цену ETH"
 
@@ -89,16 +94,6 @@ def update_real_time_prices(n_intervals):
         print(f"Error updating real-time prices: {e}")
         return "Ошибка обновления цен", "Ошибка обновления цен"
 
-
-
-
-
-
-
-
-
-# Макет приложения с добавлением стилей для фона
-app.css.append_css({"external_url": "/assets/styles.css"})
 
 # Макет с боковой панелью
 app.layout = html.Div([
@@ -157,8 +152,11 @@ app.layout = html.Div([
     html.Div([
         dcc.Location(id='url', refresh=False),
         html.Div(id='page-content')
-    ], style={'margin-left': '20%', 'padding': '20px'})
-])
+    ], style={'margin-left': '20%', 'padding': '20px', 'background-color': '#314455', 'min-height': '100vh', 'width': '80vw'})  # Обновленный стиль
+], style={'height': '100vh', 'background-color': '#314455'})  # Добавлен фоновый цвет ко всему приложению
+
+
+
 
 # Отображение разных графиков в зависимости от выбранной ссылки в боковой панели
 @app.callback(Output('page-content', 'children'),
@@ -189,10 +187,10 @@ def display_page(pathname):
             id='eth-predictions-chart',
             figure={
                 'data': [
-                    {'x': eth_data_predictions['index'], 'y': eth_data_predictions['predicted_close'],
-                     'type': 'line', 'name': 'Прогнозы ETH'}
+                    {'x': eth_data_predictions['timestamp'], 'y': eth_data_predictions['predicted_close'],
+                     'type': 'line', 'name': 'Прогноз ETH'}
                 ],
-                'layout': {'title': 'Прогнозы ETH'}
+                'layout': {'title': 'Прогноз ETH'}
             }
         )
     elif pathname == '/eth-filtered':
@@ -212,7 +210,4 @@ def display_page(pathname):
 
 # Запуск Dash-приложения
 if __name__ == '__main__':
-    app.run_server(debug=True)
-
-
-
+    app.run_server(debug=True, host='0.0.0.0')

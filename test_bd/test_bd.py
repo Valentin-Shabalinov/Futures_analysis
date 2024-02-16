@@ -1,4 +1,3 @@
-# test_db.py
 import ccxt
 import pandas as pd
 from sqlalchemy import create_engine

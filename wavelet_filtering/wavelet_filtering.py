@@ -1,4 +1,3 @@
-# wavelet_filtering.py
 from sqlalchemy import create_engine
 import pandas as pd
 import numpy as np
