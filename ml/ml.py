@@ -69,6 +69,8 @@ eth_df["predicted_close"] = eth_df[
 
 # Создаем соединение с базой данных PostgreSQL
 db_connection_string = "postgresql://futures_user:aaa@postgres-db:5432/analys"
+# db_connection_string = "postgresql://futures_user:082101@localhost:5432/analys"
+
 engine = create_engine(db_connection_string)
 
 # Записываем данные ETH в базу данных
