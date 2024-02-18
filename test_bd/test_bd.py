@@ -31,6 +31,8 @@ start_time_btc = exchange.parse8601("2022-01-01T00:00:00Z")
 
 # Создаем соединение с базой данных PostgreSQL
 db_connection_string = "postgresql://futures_user:aaa@postgres-db:5432/analys"
+# db_connection_string = "postgresql://futures_user:082101@localhost:5432/analys"
+
 engine = create_engine(db_connection_string)
 
 # Записываем данные BTC в базу данных

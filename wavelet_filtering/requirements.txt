@@ -4,4 +4,4 @@ pandas
 numpy
 statsmodels
 pyarrow
-
+pytest

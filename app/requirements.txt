@@ -5,3 +5,4 @@ requests
 SQLAlchemy
 pyarrow
 psycopg2-binary
+pytest

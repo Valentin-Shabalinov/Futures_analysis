@@ -5,6 +5,8 @@ import statsmodels.api as sm
 
 # Подключение к базе данных
 engine = create_engine("postgresql://futures_user:aaa@postgres-db:5432/analys")
+# engine = create_engine("postgresql://futures_user:082101@localhost:5432/analys")
+
 
 # Загрузка данных из таблицы btc_data
 btc_data_query = "SELECT timestamp, close AS btc_close FROM btc_data"
