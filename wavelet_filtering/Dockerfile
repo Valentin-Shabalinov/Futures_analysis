@@ -1,23 +1,23 @@
-# Используйте официальный образ Python 3.11
+# Use the official Python 3.11 image
 FROM python:3.11
 
-# Устанавливаем зависимости для компиляции некоторых библиотек
+# Install dependencies required for compiling some libraries
 RUN apt-get update && \
     apt-get install -y build-essential
 
-# Устанавливаем необходимые библиотеки из системных пакетов
-RUN pip install --no-cache-dir numpy psycopg2
+# Install necessary libraries from system packages
+RUN pip install --no-cache-dir numpy psycopg2-binary
 
 WORKDIR /app
 
-# Копируем requirements.txt и устанавливаем зависимости
+# Copy requirements.txt and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Копируем файлы приложения
+# Copy application files
 COPY . .
 
-# Команда для выполнения
+# Command to execute
 CMD ["python", "wavelet_filtering.py"]
 

@@ -4,12 +4,12 @@ from sqlalchemy import create_engine
 from datetime import datetime
 import os
 
-# Ключи API Coinbase Pro
+# API Keys for Coinbase Pro
 api_key = os.getenv("API_KEY")
 api_secret = os.getenv("API_SECRET")
 api_passphrase = os.getenv("API_PASSPHRASE")
 
-# Создаем объект Coinbase Pro API
+# Creating Coinbase Pro API object
 exchange = ccxt.coinbasepro(
     {
         "apiKey": api_key,
@@ -18,28 +18,28 @@ exchange = ccxt.coinbasepro(
     }
 )
 
-# Символы для ETHUSD и BTCUSD
+# Symbols for ETHUSD and BTCUSD
 eth_symbol = "ETH-USD"
 btc_symbol = "BTC-USD"
 
-# Параметры запроса исторических данных
-timeframe = "1h"  # 1 час
-block_size = 300  # Размер блока запроса (максимальное значение - 300)
+# Parameters for fetching historical data
+timeframe = "1h"  # 1 hour
+block_size = 300  # Request block size (maximum value - 300)
 
-# Начальная временная метка для BTC
+# Starting timestamp for BTC
 start_time_btc = exchange.parse8601("2022-01-01T00:00:00Z")
 
-# Создаем соединение с базой данных PostgreSQL
+# Creating connection to PostgreSQL database
 db_connection_string = "postgresql://futures_user:aaa@postgres-db:5432/analys"
-# db_connection_string = "postgresql://futures_user:082101@localhost:5432/analys"
+# Alternate db_connection_string = "postgresql://futures_user:082101@localhost:5432/analys"
 
 engine = create_engine(db_connection_string)
 
-# Записываем данные BTC в базу данных
+# Writing BTC data to the database
 btc_data_list = []
 
 while True:
-    # Загружаем исторические данные для BTC
+    # Fetching historical data for BTC
     btc_data = exchange.fetch_ohlcv(
         btc_symbol, timeframe, since=start_time_btc, limit=block_size
     )
@@ -48,30 +48,30 @@ while True:
     btc_data_list += btc_data
     start_time_btc = (
         btc_data[-1][0] + 1
-    )  # Устанавливаем новую временную метку для следующего блока
+    )  # Setting new timestamp for the next block
 
-# Преобразуем данные BTC в DataFrame
+# Converting BTC data to DataFrame
 btc_df = pd.DataFrame(
     btc_data_list,
     columns=["timestamp", "open", "high", "low", "close", "volume"],
 )
 
-# Преобразуем временные метки в читаемый формат
+# Converting timestamps to readable format
 btc_df["timestamp"] = btc_df["timestamp"].apply(
     lambda x: datetime.utcfromtimestamp(x / 1000).strftime("%Y-%m-%d %H:%M:%S")
 )
 
-# Записываем данные BTC в базу данных
+# Writing BTC data to the database
 btc_df.to_sql(name="btc_data", con=engine, if_exists="replace", index=False)
 
-# Начальная временная метка для ETH
+# Starting timestamp for ETH
 start_time_eth = exchange.parse8601("2022-01-01T00:00:00Z")
 
-# Записываем данные ETH в базу данных
+# Writing ETH data to the database
 eth_data_list = []
 
 while True:
-    # Загружаем исторические данные для ETH
+    # Fetching historical data for ETH
     eth_data = exchange.fetch_ohlcv(
         eth_symbol, timeframe, since=start_time_eth, limit=block_size
     )
@@ -80,21 +80,21 @@ while True:
     eth_data_list += eth_data
     start_time_eth = (
         eth_data[-1][0] + 1
-    )  # Устанавливаем новую временную метку для следующего блока
+    )  # Setting new timestamp for the next block
 
-# Преобразуем данные ETH в DataFrame
+# Converting ETH data to DataFrame
 eth_df = pd.DataFrame(
     eth_data_list,
     columns=["timestamp", "open", "high", "low", "close", "volume"],
 )
 
-# Преобразуем временные метки в читаемый формат
+# Converting timestamps to readable format
 eth_df["timestamp"] = eth_df["timestamp"].apply(
     lambda x: datetime.utcfromtimestamp(x / 1000).strftime("%Y-%m-%d %H:%M:%S")
 )
 
-# Записываем данные ETH в базу данных
+# Writing ETH data to the database
 eth_df.to_sql(name="eth_data", con=engine, if_exists="replace", index=False)
 
-# Закрываем соединение с базой данных
+# Closing the database connection
 engine.dispose()

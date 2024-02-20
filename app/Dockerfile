@@ -1,23 +1,22 @@
-# Используйте официальный образ Python 3.11
+# Use the official Python 3.11 image
 FROM python:3.11
 
-# Устанавливаем зависимости для компиляции некоторых библиотек
+# Install dependencies for compiling some libraries
 RUN apt-get update && \
     apt-get install -y build-essential
 
-# Устанавливаем необходимые библиотеки из системных пакетов
+# Install necessary libraries from system packages
 RUN pip install --no-cache-dir numpy psycopg2
 
 WORKDIR /app
 
-# Копируем requirements.txt и устанавливаем зависимости
+# Copy requirements.txt and install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Копируем файлы приложения
+# Copy application files
 COPY . .
 
-# Запуск скрипта инициализации DB и основного приложения
+# Run the DB initialization script and the main application
 CMD ["sh", "-c", "python init_db.py && python app.py"]
-

@@ -13,31 +13,31 @@ import hashlib
 import pytz
 
 
-# Подключение к базе данных PostgreSQL
+# Connecting to the PostgreSQL database
 db_connection_string = "postgresql://futures_user:aaa@postgres-db:5432/analys"
 # db_connection_string = "postgresql://futures_user:082101@localhost:5432/analys"
 
 engine = create_engine(db_connection_string)
 
-# Чтение данных из таблиц базы данных
+# Reading data from database tables
 btc_data = pd.read_sql_table("btc_data", engine)
 eth_data = pd.read_sql_table("eth_data", engine)
 eth_data_filtered = pd.read_sql_table("eth_data_filtered", engine)
 eth_data_predictions = pd.read_sql_table("eth_data_predictions", engine)
 
-# Инициализация Dash-приложения
+# Initializing Dash application
 app = dash.Dash(__name__)
 
 
-# Ключи API Coinbase Pro
+# Coinbase Pro API keys
 COINBASE_API_KEY = os.getenv("API_KEY")
 COINBASE_API_SECRET = os.getenv("API_SECRET")
 COINBASE_API_PASSPHRASE = os.getenv("API_PASSPHRASE")
 
 
-# Функция для подписи запроса к Coinbase Pro API
+# Function for signing a request to the Coinbase Pro API
 def sign_coinbase_pro_request(timestamp, method, path, body=""):
-    api_secret = COINBASE_API_SECRET or ""  # Проверка наличия API_SECRET
+    api_secret = COINBASE_API_SECRET or ""  # Checking for API_SECRET presence
     message = f"{timestamp}{method}{path}{body}"
     signature = hmac.new(
         base64.b64decode(api_secret.encode("utf-8")),
@@ -48,7 +48,7 @@ def sign_coinbase_pro_request(timestamp, method, path, body=""):
     return signature_b64
 
 
-# Функция для получения цены в реальном времени с использованием Coinbase Pro API
+# Function for getting real-time price using the Coinbase Pro API
 def get_real_time_price(product_id):
     url = f"https://api.pro.coinbase.com/products/{product_id}/ticker"
     timestamp = str(time.time())
@@ -72,14 +72,14 @@ def get_real_time_price(product_id):
         return None
 
 
-# # Функция для получения текущей даты и времени в формате "ГГГГ-ММ-ДД ЧЧ:ММ:СС"
+# Function to get the current date and time in the format "YYYY-MM-DD HH:MM:SS"
 def get_current_datetime():
     moscow_tz = pytz.timezone("Europe/Moscow")
     now = datetime.datetime.now(moscow_tz)
     return now.strftime("%Y-%m-%d %H:%M:%S")
 
 
-# Обновление цен в реальном времени каждые 10 секунд
+# Updating real-time prices every 10 seconds
 @app.callback(
     [
         Output("real-time-btc-price", "children"),
@@ -95,28 +95,28 @@ def update_real_time_prices(n_intervals):
         current_datetime = get_current_datetime()
 
         if btc_price is not None:
-            btc_output = f"Цена BTC {current_datetime}: ${btc_price}"
+            btc_output = f"BTC Price {current_datetime}: ${btc_price}"
         else:
-            btc_output = "Не удалось получить цену BTC"
+            btc_output = "Failed to fetch BTC price"
 
         if eth_price is not None:
-            eth_output = f"Цена ETH {current_datetime}: ${eth_price}"
+            eth_output = f"ETH Price {current_datetime}: ${eth_price}"
         else:
-            eth_output = "Не удалось получить цену ETH"
+            eth_output = "Failed to fetch ETH price"
 
         return btc_output, eth_output
     except Exception as e:
         print(f"Error updating real-time prices: {e}")
-        return "Ошибка обновления цен", "Ошибка обновления цен"
+        return "Error updating prices", "Error updating prices"
 
 
-# Макет с боковой панелью
+# Layout with a sidebar
 app.layout = html.Div(
     [
         html.Nav(
             children=[
                 html.H2(
-                    "Меню",
+                    "Menu",
                     style={
                         "display": "block",
                         "font-weight": "bold",
@@ -125,7 +125,7 @@ app.layout = html.Div(
                     },
                 ),
                 html.A(
-                    "Исторические данные BTC",
+                    "BTC Historical Data",
                     href="/btc",
                     style={
                         "display": "block",
@@ -136,7 +136,7 @@ app.layout = html.Div(
                     },
                 ),
                 html.A(
-                    "Исторические данные ETH",
+                    "ETH Historical Data",
                     href="/eth",
                     style={
                         "display": "block",
@@ -147,7 +147,7 @@ app.layout = html.Div(
                     },
                 ),
                 html.A(
-                    "Данные ETH без влияния BTC",
+                    "ETH Data Without BTC Influence",
                     href="/eth-filtered",
                     style={
                         "display": "block",
@@ -158,7 +158,7 @@ app.layout = html.Div(
                     },
                 ),
                 html.A(
-                    "Прогнозы ETH",
+                    "ETH Forecasts",
                     href="/eth-predictions",
                     style={
                         "display": "block",
@@ -191,7 +191,7 @@ app.layout = html.Div(
                 dcc.Interval(
                     id="real-time-interval-component",
                     interval=10
-                    * 1000,  # Обновление каждые 10 секунд (в миллисекундах)
+                    * 1000,  # Update every 10 seconds (in milliseconds)
                     n_intervals=0,
                 ),
             ],
@@ -214,13 +214,13 @@ app.layout = html.Div(
                 "min-height": "100vh",
                 "width": "80vw",
             },
-        ),  # Обновленный стиль
+        ),  # Updated style
     ],
     style={"height": "100vh", "background-color": "#314455"},
 )
 
 
-# Отображение разных графиков в зависимости от выбранной ссылки в боковой панели
+# Displaying different charts depending on the sidebar link selected
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def display_page(pathname):
     if pathname == "/btc":
@@ -232,10 +232,10 @@ def display_page(pathname):
                         "x": btc_data["timestamp"],
                         "y": btc_data["close"],
                         "type": "line",
-                        "name": "Данные BTC",
+                        "name": "BTC Data",
                     }
                 ],
-                "layout": {"title": "Исторические данные BTC"},
+                "layout": {"title": "BTC Historical Data"},
             },
         )
     elif pathname == "/eth":
@@ -247,10 +247,10 @@ def display_page(pathname):
                         "x": eth_data["timestamp"],
                         "y": eth_data["close"],
                         "type": "line",
-                        "name": "Данные ETH",
+                        "name": "ETH Data",
                     }
                 ],
-                "layout": {"title": "Исторические данные ETH"},
+                "layout": {"title": "ETH Historical Data"},
             },
         )
     elif pathname == "/eth-predictions":
@@ -262,10 +262,10 @@ def display_page(pathname):
                         "x": eth_data_predictions["timestamp"],
                         "y": eth_data_predictions["predicted_close"],
                         "type": "line",
-                        "name": "Прогноз ETH",
+                        "name": "ETH Forecast",
                     }
                 ],
-                "layout": {"title": "Прогноз ETH"},
+                "layout": {"title": "ETH Forecast"},
             },
         )
     elif pathname == "/eth-filtered":
@@ -277,22 +277,22 @@ def display_page(pathname):
                         "x": eth_data["timestamp"],
                         "y": eth_data["close"],
                         "type": "line",
-                        "name": "Данные ETH",
+                        "name": "ETH Data",
                     },
                     {
                         "x": eth_data_filtered["timestamp"],
                         "y": eth_data_filtered["eth_close_filtered"],
                         "type": "line",
-                        "name": "Данные ETH без влияния BTC",
+                        "name": "ETH Data Without BTC Influence",
                     },
                 ],
-                "layout": {"title": "Данные ETH без влияния BTC"},
+                "layout": {"title": "ETH Data Without BTC Influence"},
             },
         )
     else:
-        return html.H1("Добро пожаловать!")
+        return html.H1("Welcome!")
 
 
-# Запуск Dash-приложения
+# Running the Dash application
 if __name__ == "__main__":
     app.run_server(debug=True, host="0.0.0.0")

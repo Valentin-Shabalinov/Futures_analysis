@@ -5,12 +5,12 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 
-# Ключи API Coinbase Pro
+# API Keys for Coinbase Pro
 api_key = "jjyn6AGhau51Mzpb"
 api_secret = "rXmwagvlweDEYSQmWkcnuQoiGDv6eQ03"
 api_passphrase = "pN+X6Vs7Fs/85DM"
 
-# Создаем объект Coinbase Pro API
+# Creating Coinbase Pro API object
 exchange = ccxt.coinbasepro(
     {
         "apiKey": api_key,
@@ -19,28 +19,28 @@ exchange = ccxt.coinbasepro(
     }
 )
 
-# Символы для ETHUSD
+# Symbols for ETHUSD
 eth_symbol = "ETH-USD"
 
-# Параметры запроса исторических данных
-timeframe = "1h"  # 1 час
+# Parameters for fetching historical data
+timeframe = "1h"  # 1 hour
 
-# Загружаем исторические данные для ETH
+# Loading historical data for ETH
 eth_data = exchange.fetch_ohlcv(eth_symbol, timeframe)
 eth_df = pd.DataFrame(
     eth_data, columns=["timestamp", "open", "high", "low", "close", "volume"]
 )
 eth_df["timestamp"] = pd.to_datetime(
     eth_df["timestamp"], unit="ms"
-)  # Преобразуем временные метки
+)  # Converting timestamps
 
-# Создаем столбец 'target' для предсказания курса ETH на 1 неделю вперед
-eth_df["target"] = eth_df["close"].shift(-7)  # Сдвигаем цену на 7 строк вперед
+# Creating 'target' column for predicting ETH price 1 week ahead
+eth_df["target"] = eth_df["close"].shift(-7)  # Shifting price 7 rows forward
 
-# Удаляем последние 7 строк, так как для них нет значения 'target'
+# Removing the last 7 rows as they don't have a 'target' value
 eth_df = eth_df[:-7]
 
-# Разделение данных на обучающий и тестовый наборы
+# Splitting data into training and test sets
 X_train, X_test, y_train, y_test = train_test_split(
     eth_df[["open", "high", "low", "close", "volume"]],
     eth_df["target"],
@@ -48,33 +48,33 @@ X_train, X_test, y_train, y_test = train_test_split(
     random_state=42,
 )
 
-# Обучение модели
+# Training the model
 model = RandomForestRegressor(random_state=42)
 model.fit(X_train, y_train)
 
-# Предсказание на тестовом наборе
+# Prediction on the test set
 y_pred = model.predict(X_test)
 
-# Оценка модели
+# Evaluating the model
 mse = mean_squared_error(y_test, y_pred)
 print(f"Mean Squared Error: {mse}")
 
-# Применение модели для предсказания курса на 1 неделю вперед для всех данных
+# Applying the model to predict the price 1 week ahead for all data
 eth_df["predicted_target"] = model.predict(
     eth_df[["open", "high", "low", "close", "volume"]]
 )
 eth_df["predicted_close"] = eth_df[
     "predicted_target"
-]  # Создаем столбец 'predicted_close' на основе предсказанной цены
+]  # Creating 'predicted_close' column based on predicted price
 
-# Создаем соединение с базой данных PostgreSQL
+# Creating connection to PostgreSQL database
 db_connection_string = "postgresql://futures_user:aaa@postgres-db:5432/analys"
 # db_connection_string = "postgresql://futures_user:082101@localhost:5432/analys"
 
 engine = create_engine(db_connection_string)
 
-# Записываем данные ETH в базу данных
+# Writing ETH data to the database
 eth_df.to_sql(name="eth_data_predictions", con=engine, if_exists="replace")
 
-# Закрываем соединение с базой данных
+# Closing the database connection
 engine.dispose()
