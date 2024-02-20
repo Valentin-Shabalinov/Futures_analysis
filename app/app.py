@@ -18,6 +18,7 @@ db_connection_string = "postgresql://futures_user:aaa@postgres-db:5432/analys"
 # db_connection_string = "postgresql://futures_user:082101@localhost:5432/analys"
 
 engine = create_engine(db_connection_string)
+current_year = datetime.datetime.now().year
 
 # Reading data from database tables
 btc_data = pd.read_sql_table("btc_data", engine)
@@ -125,7 +126,7 @@ app.layout = html.Div(
                     },
                 ),
                 html.A(
-                    "BTC Historical Data",
+                    "BTC historical data",
                     href="/btc",
                     style={
                         "display": "block",
@@ -136,7 +137,7 @@ app.layout = html.Div(
                     },
                 ),
                 html.A(
-                    "ETH Historical Data",
+                    "ETH historical data",
                     href="/eth",
                     style={
                         "display": "block",
@@ -147,7 +148,7 @@ app.layout = html.Div(
                     },
                 ),
                 html.A(
-                    "ETH Data Without BTC Influence",
+                    "ETH data without BTC influence",
                     href="/eth-filtered",
                     style={
                         "display": "block",
@@ -158,7 +159,7 @@ app.layout = html.Div(
                     },
                 ),
                 html.A(
-                    "ETH Forecasts",
+                    "ETH forecasts",
                     href="/eth-predictions",
                     style={
                         "display": "block",
@@ -174,8 +175,12 @@ app.layout = html.Div(
                         "display": "block",
                         "text-decoration": "none",
                         "font-weight": "bold",
-                        "color": "#333",
+                        "color": "#D3D3D3",
                         "padding": "10px",
+                        "border": "2px dotted black",
+                        "margin-top": "60px",  # Отступ сверху
+                        "margin-bottom": "10px",  # Отступ снизу
+                        "background-color": "#4F6B72",
                     },
                 ),
                 html.Div(
@@ -184,8 +189,10 @@ app.layout = html.Div(
                         "display": "block",
                         "text-decoration": "none",
                         "font-weight": "bold",
-                        "color": "#333",
+                        "color": "#98FF98",
                         "padding": "10px",
+                        "border": "2px dotted black",
+                        "background-color": "#4F6B72",
                     },
                 ),
                 dcc.Interval(
@@ -210,11 +217,31 @@ app.layout = html.Div(
             style={
                 "margin-left": "20%",
                 "padding": "20px",
-                "background-color": "#314455",
+                "background-color": "#1F2833",
                 "min-height": "100vh",
                 "width": "80vw",
             },
         ),  # Updated style
+        html.Footer(
+            children=[
+                html.Div(
+                    f'© 2024-{current_year}',
+                    style={
+                        'textAlign': 'center',
+                        'color': '#FFF',
+                        'padding': '20px',
+                        'background-color': '#1F2833',
+                        'margin-top': '20px',
+                    }
+                )
+            ],
+            style={
+                'position': 'relative',
+                'bottom': '0',
+                'width': '100%',
+                'height': '60px',
+            }
+        )
     ],
     style={"height": "100vh", "background-color": "#314455"},
 )

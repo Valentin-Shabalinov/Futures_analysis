@@ -31,7 +31,7 @@ start_time_btc = exchange.parse8601("2022-01-01T00:00:00Z")
 
 # Creating connection to PostgreSQL database
 db_connection_string = "postgresql://futures_user:aaa@postgres-db:5432/analys"
-# Alternate db_connection_string = "postgresql://futures_user:082101@localhost:5432/analys"
+# db_connection_string = "postgresql://futures_user:082101@localhost:5432/analys"
 
 engine = create_engine(db_connection_string)
 
