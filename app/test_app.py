@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 
 
 def get_db_connection():
-    # Строка подключения к базе данных
+    # Database connection string
     db_connection_string = (
         "postgresql://futures_user:aaa@postgres-db:5432/analys"
     )
@@ -19,12 +19,12 @@ def db_connection():
 
 
 def test_db_connection(db_connection):
-    """Тестируем подключение к базе данных."""
+    """Test the database connection."""
     assert db_connection is not None
 
 
 def test_read_data(db_connection):
-    """Тестируем чтение данных из таблицы."""
+    """Test reading data from a table."""
     query = "SELECT * FROM btc_data LIMIT 10"
     df = pd.read_sql_query(query, db_connection)
     assert len(df) > 0

@@ -2,13 +2,13 @@ import psycopg2
 import os
 import time
 
-# Параметры подключения к базе данных
+# Database connection parameters
 db_name = os.getenv("POSTGRES_DB", "analys")
 db_user = os.getenv("POSTGRES_USER", "futures_user")
 db_password = os.getenv("POSTGRES_PASSWORD", "aaa")
-db_host = "postgres-db"  # Имя сервиса в docker-compose
+db_host = "postgres-db"  # Service name in docker-compose
 
-# SQL для создания таблиц
+# SQL for creating tables
 create_tables_sql = """
 BEGIN;
 
@@ -41,7 +41,7 @@ COMMIT;
 
 
 def wait_for_db_to_be_ready(max_attempts=5, delay=5):
-    """Проверяет готовность базы данных к подключению."""
+    """Checks if the database is ready for connections."""
     for attempt in range(max_attempts):
         try:
             conn = psycopg2.connect(
@@ -72,7 +72,7 @@ def create_tables():
         conn.commit()
         cursor.close()
     except Exception as e:
-        print(f"Ошибка при создании таблиц: {e}")
+        print(f"Error creating tables: {e}")
     finally:
         if conn is not None:
             conn.close()
